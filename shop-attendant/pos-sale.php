@@ -1,0 +1,64 @@
+<?php 
+
+
+session_start();
+include('includes/db_conn.php');
+
+
+
+
+	$discount   = mysqli_real_escape_string($db, $_POST['discount']);
+	//$payment    = $_POST['payment'];
+	$amount_due = mysqli_real_escape_string($db, $_POST['amount_due']);
+	date_default_timezone_set("Africa/Accra"); 
+	//$date       = date("Y-m-d H:i:s");
+	$total      = $amount_due - $discount;
+	$tendered   = mysqli_real_escape_string($db, $_POST['tendered']);
+	$change     = mysqli_real_escape_string($db, $_POST['change']);
+	$paymt_type = mysqli_real_escape_string($db, $_POST['paymt_type']);
+	$buyer_name  = mysqli_real_escape_string($db, $_POST['buyer_name']);
+    $buyer_phone = mysqli_real_escape_string($db, $_POST['buyer_phone']);
+
+
+	$username  = $_SESSION['emp_username'];
+	$get_admin = "SELECT * FROM tbl_employees WHERE emp_username = '$username'";
+	$run_admin = mysqli_query($db, $get_admin);
+	$row_admin = mysqli_fetch_array($run_admin);
+	$admin_id  = $row_admin['admin_id'];
+
+	// Put Sales summary into sales table 
+	// Get the sales id and put it into thw sales_details table to linkup with temp_trans data
+	// Reduce the product's qty purchased ffrom qty on the product table
+	//  Select Order no
+
+
+	mysqli_query($db, "INSERT INTO tbl_sales(emp_id, discount, amount_due, total, date_added, modeofpayment, cash_tendered, cash_change, buyer_name, buyer_phone) 
+	VALUES('$admin_id','$discount','$amount_due','$total', NOW(),'$paymt_type','$tendered','$change','$buyer_name','$buyer_phone')")or die(mysqli_error($db));
+	
+	// Get Last Sale ID	
+	$sales_id = mysqli_insert_id($db);
+	$_SESSION['sid'] = $sales_id;
+
+	$query = mysqli_query($db,"select * from temp_trans")or die(mysqli_error($db));
+
+		while($row = mysqli_fetch_array($query))
+		{
+			$pid   = $row['prod_id'];	
+ 			$qty   = $row['qty'];
+			$price = $row['price'];
+
+
+			
+			mysqli_query($db, "INSERT INTO tbl_sales_details(prod_id, qty, price, sales_id)VALUES('$pid','$qty','$price', '$sales_id')")or die(mysqli_error($db));
+			mysqli_query($db, "UPDATE product_tbl SET prod_qty = prod_qty - '$qty' where prod_id = '$pid'") or die(mysqli_error($db)); 
+		}
+		
+
+
+		mysqli_query($db,"INSERT INTO tbl_payment(emp_id, payment, payment_date, payment_for, due ,status, sales_id) 
+						VALUES('$admin_id','$total',NOW(), NOW(), '$total','paid','$sales_id')")or die(mysqli_error($db));
+		echo "<script>document.location ='receipt.php'</script>";  	
+		
+		$result = mysqli_query($db, "DELETE FROM temp_trans")or die(mysqli_error($db));	
+	
+?>
