@@ -1,7 +1,7 @@
 # Use the official PHP image as the base image
 FROM php:8.0-apache
 
-# Install MySQL server and PHP extensions
+# Install MariaDB (MySQL replacement) and PHP extensions
 RUN apt-get update && apt-get install -y \
     mariadb-server \
     && docker-php-ext-install pdo pdo_mysql mysqli \
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Set environment variables for MySQL
+# Set environment variables for MariaDB
 ENV MYSQL_ROOT_PASSWORD=rootpassword
 ENV MYSQL_DATABASE=mydatabase
 ENV MYSQL_USER=myuser
@@ -25,12 +25,13 @@ COPY init.sql /docker-entrypoint-initdb.d/
 # Set proper permissions for the copied files
 RUN chown -R www-data:www-data /var/www/html
 
-# Expose Apache and MySQL ports
+# Expose Apache and MariaDB ports
 EXPOSE 80 3306
 
-# Start MySQL and Apache in the foreground
-# Start MySQL directly in the foreground
-CMD mysqld_safe & \
+# Start MySQL and then Apache in the foreground
+CMD service mysql start && \
+    # Wait for MySQL to be fully initialized before running the script
     sleep 10 && \
-    mysql -u root -prootpassword mydatabase < /var/www/html/init.sql && \
+    mysql -u root -prootpassword -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};" && \
+    mysql -u root -prootpassword ${MYSQL_DATABASE} < /var/www/html/init.sql && \
     apache2-foreground
