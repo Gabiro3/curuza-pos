@@ -1,5 +1,22 @@
 <?php
 
-$db = mysqli_connect('sql305.infinityfree.com', 'if0_39256219', 'mh04qMwXP2u', 'f0_39256219_store_db2');
+// Database connection details
+$host = 'localhost';   // MySQL server running in the same container
+$username = 'myuser';  // MySQL user from Dockerfile environment
+$password = 'mypassword';  // MySQL password from Dockerfile environment
+$database = 'mydatabase';  // MySQL database name from Dockerfile environment
 
+// Connect to the MySQL server
+$db = mysqli_connect($host, $username, $password, $database);
+
+// Check connection
+if (!$db) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
+// Optional: Set the character set to UTF-8
+mysqli_set_charset($db, 'utf8');
+
+// Success message (optional)
+echo "Connected successfully to MySQL!";
 ?>
