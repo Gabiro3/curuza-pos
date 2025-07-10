@@ -29,6 +29,8 @@ RUN chown -R www-data:www-data /var/www/html
 EXPOSE 80 3306
 
 # Start MySQL and Apache in the foreground
-CMD service mysql start && \
+# Start MySQL directly in the foreground
+CMD mysqld_safe & \
+    sleep 10 && \
     mysql -u root -prootpassword mydatabase < /var/www/html/init.sql && \
     apache2-foreground
