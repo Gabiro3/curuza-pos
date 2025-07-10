@@ -1,7 +1,7 @@
 <?php
 
 // Database connection details
-$host = 'localhost';   // MySQL server running in the same container
+$host = 'mysql';   // MySQL server running in the same container
 $username = 'myuser';  // MySQL user from Dockerfile environment
 $password = 'mypassword';  // MySQL password from Dockerfile environment
 $database = 'mydatabase';  // MySQL database name from Dockerfile environment
