@@ -3,7 +3,7 @@ FROM php:8.0-apache
 
 # Install MySQL server and PHP extensions
 RUN apt-get update && apt-get install -y \
-    mysql-server \
+    mariadb-server \
     && docker-php-ext-install pdo pdo_mysql mysqli \
     && apt-get clean
 
