@@ -9,6 +9,9 @@ while ! mysqladmin ping --silent; do
     sleep 1
 done
 
+# Grant privileges to the root user (ensure root can connect from localhost)
+mysql -u root -prootpassword -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' IDENTIFIED BY 'rootpassword' WITH GRANT OPTION;"
+
 # Initialize the database with your init.sql file (only if the database is empty)
 mysql -u root -prootpassword < /docker-entrypoint-initdb.d/init.sql
 

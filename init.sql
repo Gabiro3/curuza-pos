@@ -26,6 +26,10 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `admin_tbl`
 --
+-- Create the database if it doesn't exist
+CREATE DATABASE IF NOT EXISTS store_db;
+
+-- Use the store_db database
 USE store_db;
 
 CREATE TABLE `admin_tbl` (
