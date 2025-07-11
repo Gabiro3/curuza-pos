@@ -1,37 +1,32 @@
-# Use the official PHP image as the base image
+# Step 1: Use the official PHP Apache image
 FROM php:8.0-apache
 
-# Install MySQL server and PHP extensions
-RUN apt-get update && apt-get install -y \
-    mariadb-server \
-    && docker-php-ext-install pdo pdo_mysql mysqli \
-    && apt-get clean
+# Step 2: Install necessary PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# Enable Apache mod_rewrite
+# Step 3: Enable Apache mod_rewrite for URL rewriting
 RUN a2enmod rewrite
 
-# Set environment variables for MySQL
+# Step 4: Install MySQL server (MariaDB in this case)
+RUN apt-get update && apt-get install -y \
+    mariadb-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# Step 5: Set environment variables for MySQL configuration
 ENV MYSQL_ROOT_PASSWORD=rootpassword
-ENV MYSQL_DATABASE=mydatabase
+ENV MYSQL_DATABASE=store_db
 ENV MYSQL_USER=myuser
 ENV MYSQL_PASSWORD=mypassword
 
-# Copy the current directory contents into the container
+# Step 6: Copy your PHP code and SQL initialization file into the container
 COPY . /var/www/html/
+COPY ./init.sql /docker-entrypoint-initdb.d/
 
-# Copy the init.sql script to the correct directory
-COPY init.sql /docker-entrypoint-initdb.d/
-
-# Set proper permissions for the copied files
+# Step 7: Set the correct ownership for web files
 RUN chown -R www-data:www-data /var/www/html
 
-# Expose Apache and MySQL ports
+# Step 8: Expose ports for Apache and MySQL (you can use 3306 if you're deploying MySQL separately, otherwise, it's 80)
 EXPOSE 80 3306
 
-# Start MySQL and Apache in the foreground
-# Start MySQL directly in the foreground
-CMD mysqld_safe & \
-    sleep 10 && \
-    mysql -u root -prootpassword -e "CREATE DATABASE IF NOT EXISTS ${MYSQL_DATABASE};" && \
-    mysql -u root -prootpassword ${MYSQL_DATABASE} < /var/www/html/init.sql && \
-    apache2-foreground
+# Step 9: Start both Apache and MySQL in the background
+CMD service mysql start && apache2-foreground

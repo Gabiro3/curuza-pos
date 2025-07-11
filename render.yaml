@@ -1,6 +1,16 @@
 services:
   - type: web
-    name: php-web
+    name: pawn-shop-app
     env: php
-    buildCommand: "composer install"
-    startCommand: "php -S 0.0.0.0:10000"
+    buildCommand: ""
+    startCommand: "docker build -t pawn-shop-image . && docker run -p 80:80 pawn-shop-image"
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        value: "rootpassword"
+      - key: MYSQL_DATABASE
+        value: "store_db"
+      - key: MYSQL_USER
+        value: "myuser"
+      - key: MYSQL_PASSWORD
+        value: "mypassword"
+    autoDeploy: true

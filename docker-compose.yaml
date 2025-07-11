@@ -1,0 +1,43 @@
+version: "3.7"
+
+services:
+  php:
+    build:
+      context: . # Assuming the Dockerfile is in the same directory as the docker-compose.yml
+    container_name: php-app
+    depends_on:
+      - mysql # Ensure PHP waits for MySQL container to be ready
+    environment:
+      MYSQL_HOST: mysql # MySQL service name, defined below
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+      MYSQL_DATABASE: mydatabase
+    volumes:
+      - .:/var/www/html # Mount the current directory to the container’s web directory
+    ports:
+      - "80:80" # Expose port 80 for the PHP/Apache server
+    networks:
+      - app-network
+
+  mysql:
+    image: mariadb:latest # Use the official MariaDB image (you can also use mysql if you prefer)
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    ports:
+      - "3306:3306" # Expose MySQL port for external connections
+    volumes:
+      - mysql_data:/var/lib/mysql # Persist data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Copy init.sql to the MySQL container for initialization
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data: # Persist MySQL data between container restarts
