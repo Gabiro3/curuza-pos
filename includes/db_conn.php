@@ -1,7 +1,7 @@
 <?php
 
 // MySQL host is 'localhost' when both MySQL and PHP are in the same container
-$db = mysqli_connect('localhost', 'myuser', 'mypassword', 'store_db');
+$db = mysqli_connect('127.0.0.1', 'root', 'rootpassword', 'store_db');
 
 // Check connection
 if (!$db) {
