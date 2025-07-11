@@ -10,7 +10,6 @@ RUN a2enmod rewrite
 # Step 4: Install MySQL server (MariaDB in this case)
 RUN apt-get update && apt-get install -y \
     mariadb-server \
-    netcat \
     && rm -rf /var/lib/apt/lists/*
 
 # Step 5: Set environment variables for MySQL configuration
@@ -29,10 +28,9 @@ RUN chown -R www-data:www-data /var/www/html
 # Step 8: Expose ports for Apache and MySQL (80 for HTTP, 3306 for MySQL)
 EXPOSE 80 3306
 
-# Step 9: Set the entrypoint to MariaDB's default entrypoint, which will ensure proper startup
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Step 9: Copy the start.sh script to the container and set it as executable
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Step 10: Start MySQL and wait until it's ready, then start Apache
-CMD ["bash", "-c", "service mysql start && \
-    while ! nc -z localhost 3306; do sleep 1; done && \
-    apache2-foreground"]
+# Step 10: Use the start.sh script to initialize MySQL and start Apache
+CMD ["/start.sh"]
